@@ -1,0 +1,14 @@
+[
+  { "mode": "Surface", "slabFrom": 0.0, "slabTo": 0.5, "slabType": "Fixed", "local": 26, "withinZone": 31, "metro": 36, "roi": 39, "specialZone": 63 },
+  { "mode": "Surface", "slabFrom": 0.5, "slabTo": 1.0, "slabType": "Fixed", "local": 46, "withinZone": 53, "metro": 67, "roi": 76, "specialZone": 109 },
+  { "mode": "Surface", "slabFrom": 1.0, "slabTo": 1.5, "slabType": "Fixed", "local": 62, "withinZone": 71, "metro": 90, "roi": 102, "specialZone": 146 },
+  { "mode": "Surface", "slabFrom": 1.5, "slabTo": 2.0, "slabType": "Fixed", "local": 69, "withinZone": 81, "metro": 107, "roi": 123, "specialZone": 180 },
+  { "mode": "Surface", "slabFrom": 2.0, "slabTo": 3.0, "slabType": "Fixed", "local": 87, "withinZone": 107, "metro": 135, "roi": 163, "specialZone": 230 },
+  { "mode": "Surface", "slabFrom": 3.0, "slabTo": 4.0, "slabType": "Fixed", "local": 107, "withinZone": 132, "metro": 164, "roi": 200, "specialZone": 277 },
+  { "mode": "Surface", "slabFrom": 4.0, "slabTo": 5.0, "slabType": "Fixed", "local": 120, "withinZone": 155, "metro": 187, "roi": 225, "specialZone": 315 },
+  { "mode": "Surface", "slabFrom": 5.0, "slabTo": null, "slabType": "Add Per KG", "local": 15, "withinZone": 21, "metro": 26, "roi": 29, "specialZone": 45 },
+  { "mode": "Air", "slabFrom": 0.0, "slabTo": 0.5, "slabType": "Fixed", "local": 0, "withinZone": 50, "metro": 60, "roi": 68, "specialZone": 85 },
+  { "mode": "Air", "slabFrom": 0.5, "slabTo": 1.0, "slabType": "Fixed", "local": 0, "withinZone": 68, "metro": 105, "roi": 115, "specialZone": 145 },
+  { "mode": "Air", "slabFrom": 1.0, "slabTo": 2.0, "slabType": "Fixed", "local": 0, "withinZone": 108, "metro": 140, "roi": 158, "specialZone": 218 },
+  { "mode": "Air", "slabFrom": 2.0, "slabTo": null, "slabType": "Add Per KG", "local": 0, "withinZone": 43, "metro": 48, "roi": 58, "specialZone": 63 }
+]

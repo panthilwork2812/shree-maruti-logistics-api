@@ -1,0 +1,8 @@
+[
+  { "clientLocation": "Metro", "hubName": "DELHI JHANDEWALAN HUB", "pincode": "110001", "ecomServiceable": "Y", "local": "1", "zonal": "2-3", "metro": "3-4", "roi": "4-7" },
+   { "clientLocation": "Within State", "hubName": "RAJKOT HUB", "pincode": "360001", "ecomServiceable": "Y", "local": "1", "zonal": "2-3", "metro": "3-4", "roi": "4-7" },
+  { "clientLocation": "Local", "hubName": "SURAT HUB", "pincode": "394010", "ecomServiceable": "Y", "local": "1", "zonal": "2-3", "metro": "3-4", "roi": "4-7" },
+   { "clientLocation": "ROI", "hubName": "GOA HUB", "pincode": "403001", "ecomServiceable": "Y", "local": "1", "zonal": "2-3", "metro": "3-4", "roi": "4-7" },
+ { "clientLocation": "Metro", "hubName": "HYDERABAD SECUNDERABAD HUB", "pincode": "500025", "ecomServiceable": "Y", "local": "1", "zonal": "2-3", "metro": "3-4", "roi": "4-7" },
+  { "clientLocation": "Special Zone", "hubName": "KANNUR HUB", "pincode": "670001", "ecomServiceable": "Y", "local": "1", "zonal": "2-3", "metro": "3-4", "roi": "4-7" }
+ ]

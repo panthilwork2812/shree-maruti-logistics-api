@@ -1,0 +1,11 @@
+node_modules/
+.env
+*.env
+credentials.json
+sheetconfig.json
+*key*.json
+*credential*.json
+*secret*.json
+*.log
+.DS_Stores
+sheetconfig.json

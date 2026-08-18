@@ -1,0 +1,29 @@
+{
+  "name": "shree-maruti-logistics-api",
+  "version": "1.0.0",
+  "description": "Node.js API for Google Sheets integrated Shipping Rate Calculator & Order Processor",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": [
+    "nodejs",
+    "google-sheets",
+    "express",
+    "logistics",
+    "shipping-calculator",
+    "courier-rate-api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "googleapis": "^140.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

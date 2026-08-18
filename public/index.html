@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shree Maruti Shipping Rate Calculator & Sheet Sync</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #f4f6f9;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      color: white;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+    }
+    header h1 {
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    header p {
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      margin-top: 0.4rem;
+    }
+    main {
+      flex: 1;
+      max-width: 800px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+    }
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+    .input-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 0.5rem;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-group input:focus {
+      border-color: #3b82f6;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 0.9rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background: #2563eb;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    }
+    .btn:hover {
+      background: #1d4ed8;
+    }
+    .btn:active {
+      transform: scale(0.99);
+    }
+    .btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 0.5rem;
+      display: none;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .status-box {
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      border-radius: 8px;
+      display: none;
+      font-size: 0.925rem;
+      line-height: 1.5;
+    }
+    .status-box.loading {
+      display: block;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+    }
+    .status-box.success {
+      display: block;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+    .status-box.error {
+      display: block;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .stat-card {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      text-align: center;
+    }
+    .stat-card .value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .stat-card .label {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+    }
+    .open-sheet-btn {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      background: #16a34a;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .open-sheet-btn:hover {
+      background: #15803d;
+    }
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🚚 Shree Maruti Logistics Rate Calculator</h1>
+    <p>Automated Google Sheets Shipping Freight Calculation Engine</p>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="input-group">
+        <label for="spreadsheetId">Target Google Spreadsheet ID (Defaults from .env)</label>
+        <input type="text" id="spreadsheetId" placeholder="Loading Spreadsheet ID from .env..." />
+      </div>
+
+      <button id="calcBtn" class="btn" onclick="runCalculation()">
+        <span class="spinner" id="btnSpinner"></span>
+        <span id="btnText">⚡ Calculate Rates & Sync to Result Sheet</span>
+      </button>
+
+      <div id="statusBox" class="status-box"></div>
+    </div>
+  </main>
+
+  <footer>
+    Shree Maruti Logistics Rate API &copy; 2026
+  </footer>
+
+  <script>
+    let currentSpreadsheetId = '';
+
+    // Fetch default Spreadsheet ID on load
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/config');
+        const data = await res.json();
+        if (data.spreadsheetId) {
+          currentSpreadsheetId = data.spreadsheetId;
+          document.getElementById('spreadsheetId').value = data.spreadsheetId;
+        }
+      } catch (err) {
+        console.log('Using default env spreadsheet ID');
+      }
+    }
+
+    loadConfig();
+
+    async function runCalculation() {
+      const calcBtn = document.getElementById('calcBtn');
+      const btnSpinner = document.getElementById('btnSpinner');
+      const btnText = document.getElementById('btnText');
+      const statusBox = document.getElementById('statusBox');
+      const customSheetId = document.getElementById('spreadsheetId').value.trim();
+
+      // Set Loading UI State
+      calcBtn.disabled = true;
+      btnSpinner.style.display = 'inline-block';
+      btnText.innerText = 'Calculating Rates & Syncing Sheets...';
+      
+      statusBox.className = 'status-box loading';
+      statusBox.style.display = 'block';
+      statusBox.innerHTML = `
+        <strong>⏳ Processing Orders...</strong><br>
+        Fetching <code>Orders</code>, <code>RateCard</code>, and <code>PincodeMaster</code> tabs...
+      `;
+
+      try {
+        const payload = customSheetId ? { spreadsheetId: customSheetId } : {};
+        const response = await fetch('/api/calculate-and-save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.status === 'success') {
+          const sheetId = customSheetId || currentSpreadsheetId;
+          const googleSheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/edit#gid=0`;
+
+          statusBox.className = 'status-box success';
+          statusBox.innerHTML = `
+            <strong>✅ Calculation Completed Successfully!</strong><br>
+            All order rows have been calculated and saved into the <strong>Result</strong> tab with the new column <strong>"Rate"</strong>.
+            
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="value">${data.totalOrdersProcessed || 0}</div>
+                <div class="label">Orders Processed</div>
+              </div>
+              <div class="stat-card">
+                <div class="value">₹${data.totalCalculatedRateSum || 0}</div>
+                <div class="label">Total Freight Amount</div>
+              </div>
+            </div>
+
+            <p style="margin-top: 1rem;">🔗 <em>Opening Google Sheet in a new tab...</em></p>
+            <a href="${googleSheetUrl}" target="_blank" class="open-sheet-btn">📄 Open Google Sheet Result Tab</a>
+          `;
+
+          // Automatically open Google Sheet tab after 1.2 seconds
+          setTimeout(() => {
+            window.open(googleSheetUrl, '_blank');
+          }, 1200);
+
+        } else {
+          statusBox.className = 'status-box error';
+          statusBox.innerHTML = `
+            <strong>❌ Error Occurred:</strong> ${data.message || 'Failed to process calculations.'}
+            ${data.remedies ? `<ul style="margin-top:0.5rem; padding-left:1.2rem;">${data.remedies.map(r => `<li>${r}</li>`).join('')}</ul>` : ''}
+          `;
+        }
+      } catch (err) {
+        statusBox.className = 'status-box error';
+        statusBox.innerHTML = `<strong>❌ Network Error:</strong> ${err.message}`;
+      } finally {
+        calcBtn.disabled = false;
+        btnSpinner.style.display = 'none';
+        btnText.innerText = '⚡ Calculate Rates & Sync to Result Sheet';
+      }
+    }
+  </script>
+</body>
+</html>
