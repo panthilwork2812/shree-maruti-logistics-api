@@ -18,10 +18,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Config Endpoint for Web Dashboard
-app.get('/api/config', (req, res) => {
+app.get('/api/config', async (req, res) => {
+  const spreadsheetId = process.env.SPREADSHEET_ID || '';
+  let gids = { Result: 0, Orders: 0, RateCard: 0, PincodeMaster: 0 };
+  try {
+    if (googleSheetsService.isConfigured()) {
+      gids = await googleSheetsService.fetchSpreadsheetGids(spreadsheetId);
+    }
+  } catch (e) {
+    console.warn('Could not fetch tab GIDs:', e.message);
+  }
   res.json({
     status: 'success',
-    spreadsheetId: process.env.SPREADSHEET_ID || ''
+    spreadsheetId,
+    gids
   });
 });
 
