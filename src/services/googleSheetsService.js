@@ -13,7 +13,9 @@ class GoogleSheetsService {
    * Always resolves Spreadsheet ID from parameter, env variable SPREADSHEET_ID
    */
   get spreadsheetId() {
-    return process.env.SPREADSHEET_ID || process.env.GOOGLE_SHEET_ORDERS_ID || "";
+    return (
+      process.env.SPREADSHEET_ID || process.env.GOOGLE_SHEET_ORDERS_ID || ""
+    );
   }
 
   resolveSpreadsheetId(paramId = null) {
@@ -156,26 +158,43 @@ class GoogleSheetsService {
   parseOrdersRows(rawRows) {
     if (!rawRows || rawRows.length < 2) return [];
     return rawRows.slice(1).map((row) => ({
-      referenceId: row[0] || "",
-      orderDate: row[1] || "",
+      referenceId: row[0] || "-",
+      orderDate: row[1] || "-",
       orderType: row[2] || "Forward",
       parcelCategory: row[3] || "ECOMM",
       deliveryMode: row[4] || "SURFACE",
       paymentType: row[5] || "COD",
-      awbNumber: row[6] || "",
+      awbNumber: row[6] || "-",
+      eWaybills: row[7] || "-",
+      pickupName: row[8] || "-",
+      pickupPhone: row[9] || "-",
+      pickupAddress: row[10] || "-",
+      pickupLandmark: row[11] || "-",
+      pickupCity: row[12] || "-",
+      pickupState: row[13] || "-",
       pickupPincode: (row[14] || "").toString().trim(),
-      deliveryCity: row[19] || "",
-      deliveryState: row[20] || "",
+      deliveryName: row[15] || "-",
+      deliveryPhone: row[16] || "-",
+      deliveryAddress: row[17] || "-",
+      deliveryLandmark: row[18] || "-",
+      deliveryCity: row[19] || "-",
+      deliveryState: row[20] || "-",
       deliveryPincode: (row[21] || "").toString().trim(),
       physicalWeight: parseFloat(row[22]) || 0,
       length: parseFloat(row[23]) || 0,
       width: parseFloat(row[24]) || 0,
       height: parseFloat(row[25]) || 0,
-      itemsName: row[26] || "",
-      itemsSku: row[27] || "",
+      itemsName: row[26] || "-",
+      itemsSku: row[27] || "-",
       quantity: parseInt(row[28], 10) || 1,
       itemsUnitPrice: parseFloat(row[29]) || 0,
-      shopifyOrderId: row[35] || "",
+      description: (row[30] || "").toString().trim() || "-",
+      itemTaxType: (row[31] || "").toString().trim() || "-",
+      itemTaxValue: parseFloat(row[32]) || 0,
+      itemDiscountType: (row[33] || "").toString().trim() || "-",
+      itemDiscountValue: parseFloat(row[34]) || 0,
+      shopifyOrderId: row[35] || "-",
+      deliveryStatus: row[36] || "Delivered",
     }));
   }
 
@@ -203,11 +222,14 @@ class GoogleSheetsService {
    */
   async fetchRawOrdersTable(spreadsheetId = null) {
     const targetId = this.resolveSpreadsheetId(spreadsheetId);
-    const rawRows = await this.getSheetValues(targetId, `${this.ordersSheetName}!A:AZ`);
+    const rawRows = await this.getSheetValues(
+      targetId,
+      `${this.ordersSheetName}!A:AZ`,
+    );
     if (!rawRows || rawRows.length === 0) return { header: [], rows: [] };
     return {
       header: rawRows[0],
-      rows: rawRows.slice(1)
+      rows: rawRows.slice(1),
     };
   }
 
@@ -264,7 +286,7 @@ class GoogleSheetsService {
   }
 
   /**
-   * Write complete enriched raw Orders table (all columns + "Rate") to Result sheet tab
+   * Write complete enriched raw Orders table (all columns + financial breakdown) to Result sheet tab
    */
   async writeRawTableToResultSheet(headerRow, valueRows, spreadsheetId = null) {
     const client = this.sheetsClient;
@@ -275,7 +297,18 @@ class GoogleSheetsService {
       );
     }
 
-    const values = [headerRow, ...valueRows];
+    const sanitizeValue = (val) => {
+      if (val === null || val === undefined) return "-";
+      if (typeof val === "string" && val.trim() === "") return "-";
+      return val;
+    };
+
+    const sanitizedHeader = (headerRow || []).map((h) => sanitizeValue(h));
+    const sanitizedValueRows = (valueRows || []).map((row) =>
+      (row || []).map((cell) => sanitizeValue(cell)),
+    );
+
+    const values = [sanitizedHeader, ...sanitizedValueRows];
 
     const response = await client.spreadsheets.values.update({
       spreadsheetId: targetSpreadsheetId,

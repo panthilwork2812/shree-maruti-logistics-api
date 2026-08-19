@@ -20,7 +20,12 @@ app.use(express.static(path.join(__dirname, '../public')));
 // Config Endpoint for Web Dashboard
 app.get('/api/config', async (req, res) => {
   const spreadsheetId = process.env.SPREADSHEET_ID || '';
-  let gids = { Result: 0, Orders: 0, RateCard: 0, PincodeMaster: 0 };
+  let gids = {
+        Result: 0,
+        Orders: 2012081852,
+        RateCard: 242415244,
+        PincodeMaster: 1399261952,
+      };
   try {
     if (googleSheetsService.isConfigured()) {
       gids = await googleSheetsService.fetchSpreadsheetGids(spreadsheetId);

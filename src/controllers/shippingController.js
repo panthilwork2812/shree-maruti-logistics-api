@@ -1,7 +1,5 @@
 const calculationService = require("../services/calculationService");
 const googleSheetsService = require("../services/googleSheetsService");
-const pincodeService = require("../services/pincodeService");
-const rateCardService = require("../services/rateCardService");
 
 const localPincodes = require("../data/pincodeMaster.json");
 const localRateCard = require("../data/rateCard.json");
@@ -17,10 +15,8 @@ class ShippingController {
    */
   async getPincodes(req, res) {
     try {
-      console.log("req.query.source :", req.query.source);
       const useSheets = req.query.source === "sheets";
       if (useSheets && googleSheetsService.isConfigured()) {
-        console.log("googleSheetsService.isConfigured() :");
         const pincodes = await googleSheetsService.fetchPincodeMaster();
         return res.json({
           status: "success",
@@ -36,7 +32,6 @@ class ShippingController {
         data: localPincodes,
       });
     } catch (error) {
-      console.log("error :", error);
       return res.status(500).json({ status: "error", message: error.message });
     }
   }
@@ -258,18 +253,24 @@ class ShippingController {
    * Primary Single API Endpoint:
    * POST /api/calculate-and-save
    * Reads Orders, RateCard, PincodeMaster, computes Rate for all rows based on deliveryMode & physicalWeight,
-   * appends new column "Rate" to all original order rows, and saves the complete dataset into the "Result" sheet tab!
+   * appends new financial breakdown columns to all original order rows, and saves the complete dataset into the "Result" sheet tab!
    */
   async calculateAndSave(req, res) {
     try {
       const spreadsheetId = req.body?.spreadsheetId || req.query?.spreadsheetId || process.env.SPREADSHEET_ID;
+      console.log(`\n📥 [API Request] POST /api/calculate-and-save received.`);
+      console.log(`   └─ Target Spreadsheet ID: ${spreadsheetId}`);
+
       const result = await calculationService.calculateAndSaveAllRowsWithRate(spreadsheetId);
+
+      console.log(`📤 [API Response] Responding to client (Status: 200 OK, Processed: ${result.totalOrdersProcessed} orders)\n`);
       return res.json({
         status: "success",
-        message: 'Successfully calculated rates for all orders and saved to Result sheet with new column "Rate"!',
+        message: 'Successfully calculated rates for all orders and saved to Result sheet with financial breakdown!',
         ...result
       });
     } catch (error) {
+      console.error(`❌ [API Error] calculateAndSave failed: ${error.message}`);
       return res.status(500).json({ status: "error", message: error.message });
     }
   }
