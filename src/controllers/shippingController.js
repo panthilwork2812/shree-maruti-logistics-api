@@ -70,6 +70,7 @@ class ShippingController {
   async getOrders(req, res) {
     try {
       const useSheets = req.query.source === "sheets";
+      console.log("useSheets: ", req.query);
       if (useSheets && googleSheetsService.isConfigured()) {
         const orders = await googleSheetsService.fetchOrders();
         return res.json({
@@ -257,17 +258,24 @@ class ShippingController {
    */
   async calculateAndSave(req, res) {
     try {
-      const spreadsheetId = req.body?.spreadsheetId || req.query?.spreadsheetId || process.env.SPREADSHEET_ID;
+      const spreadsheetId =
+        req.body?.spreadsheetId ||
+        req.query?.spreadsheetId ||
+        process.env.SPREADSHEET_ID;
       console.log(`\n📥 [API Request] POST /api/calculate-and-save received.`);
       console.log(`   └─ Target Spreadsheet ID: ${spreadsheetId}`);
 
-      const result = await calculationService.calculateAndSaveAllRowsWithRate(spreadsheetId);
+      const result =
+        await calculationService.calculateAndSaveAllRowsWithRate(spreadsheetId);
 
-      console.log(`📤 [API Response] Responding to client (Status: 200 OK, Processed: ${result.totalOrdersProcessed} orders)\n`);
+      console.log(
+        `📤 [API Response] Responding to client (Status: 200 OK, Processed: ${result.totalOrdersProcessed} orders)\n`,
+      );
       return res.json({
         status: "success",
-        message: 'Successfully calculated rates for all orders and saved to Result sheet with financial breakdown!',
-        ...result
+        message:
+          "Successfully calculated rates for all orders and saved to Result sheet with financial breakdown!",
+        ...result,
       });
     } catch (error) {
       console.error(`❌ [API Error] calculateAndSave failed: ${error.message}`);

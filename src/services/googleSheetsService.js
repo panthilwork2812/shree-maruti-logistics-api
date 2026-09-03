@@ -150,52 +150,62 @@ class GoogleSheetsService {
     const targetId = this.resolveSpreadsheetId(spreadsheetId);
     const rawRows = await this.getSheetValues(
       targetId,
-      `${this.ordersSheetName}!A:AJ`,
+      `${this.ordersSheetName}!A:AO`,
     );
     return this.parseOrdersRows(rawRows);
   }
 
   parseOrdersRows(rawRows) {
     if (!rawRows || rawRows.length < 2) return [];
-    return rawRows.slice(1).map((row) => ({
-      referenceId: row[0] || "-",
-      orderDate: row[1] || "-",
-      orderType: row[2] || "Forward",
-      parcelCategory: row[3] || "ECOMM",
-      deliveryMode: row[4] || "SURFACE",
-      paymentType: row[5] || "COD",
-      awbNumber: row[6] || "-",
-      eWaybills: row[7] || "-",
-      pickupName: row[8] || "-",
-      pickupPhone: row[9] || "-",
-      pickupAddress: row[10] || "-",
-      pickupLandmark: row[11] || "-",
-      pickupCity: row[12] || "-",
-      pickupState: row[13] || "-",
-      pickupPincode: (row[14] || "").toString().trim(),
-      deliveryName: row[15] || "-",
-      deliveryPhone: row[16] || "-",
-      deliveryAddress: row[17] || "-",
-      deliveryLandmark: row[18] || "-",
-      deliveryCity: row[19] || "-",
-      deliveryState: row[20] || "-",
-      deliveryPincode: (row[21] || "").toString().trim(),
-      physicalWeight: parseFloat(row[22]) || 0,
-      length: parseFloat(row[23]) || 0,
-      width: parseFloat(row[24]) || 0,
-      height: parseFloat(row[25]) || 0,
-      itemsName: row[26] || "-",
-      itemsSku: row[27] || "-",
-      quantity: parseInt(row[28], 10) || 1,
-      itemsUnitPrice: parseFloat(row[29]) || 0,
-      description: (row[30] || "").toString().trim() || "-",
-      itemTaxType: (row[31] || "").toString().trim() || "-",
-      itemTaxValue: parseFloat(row[32]) || 0,
-      itemDiscountType: (row[33] || "").toString().trim() || "-",
-      itemDiscountValue: parseFloat(row[34]) || 0,
-      shopifyOrderId: row[35] || "-",
-      deliveryStatus: row[36] || "Delivered",
-    }));
+    return rawRows
+      .slice(1)
+      .filter((row) => row[4] !== "FAILED")
+      .map((row) => ({
+        orderId: row[0] || "-",
+        referenceId: row[1] || "-",
+        awbNumber: row[2] || "-",
+        orderStatus: row[3] || "-",
+        shipmentStatus: row[4] || "-",
+        orderDate: row[5] || "-",
+        createdAt: row[6] || "-",
+        carrierName: row[7] || "-",
+        orderType: row[8] || "Forward",
+        deliveryMode: row[9] || "SURFACE",
+        parcelCategory: row[10] || "ECOMM",
+        utmProduct: row[11] || "-",
+        pickupName: row[12] || "-",
+        pickupPhone: row[13] || "-",
+        pickupCity: row[14] || "-",
+        pickupState: row[15] || "-",
+        pickupPincode: (row[16] || "").toString().trim(),
+        deliveryName: row[17] || "-",
+        deliveryPhone: row[18] || "-",
+        deliveryCity: row[19] || "-",
+        deliveryState: row[20] || "-",
+        deliveryPincode: (row[21] || "").toString().trim(),
+        itemsName: row[22] || "-",
+        itemsSku: row[23] || "-",
+        quantity: parseInt(row[24], 10) || 1,
+        itemsUnitPrice: parseFloat(row[25]) || 0,
+        totalItemPrice: parseFloat(row[26]) || 0,
+        physicalWeight: parseFloat(row[27]) || 0,
+        volumetricWeight: parseFloat(row[28]) || 0,
+        length: parseFloat(row[29]) || 0,
+        width: parseFloat(row[30]) || 0,
+        height: parseFloat(row[31]) || 0,
+        paymentType: row[32] || "COD",
+        totalFreightCharges: parseFloat(row[33]) || 0,
+        documentType: row[34] || "-",
+        documentNumber: row[35] || "-",
+        documentLink: row[36] || "-",
+        eWayBillNumber: row[37] || "-",
+        hasDispute: row[38] || false,
+        manifested: row[39] || false,
+        failedReason: row[40] || "-",
+        deliveryStatus: String(row[4] ?? "").includes("RTO")
+          ? "RTO"
+          : "Delivered",
+      }));
   }
 
   /**
@@ -222,14 +232,68 @@ class GoogleSheetsService {
    */
   async fetchRawOrdersTable(spreadsheetId = null) {
     const targetId = this.resolveSpreadsheetId(spreadsheetId);
+
     const rawRows = await this.getSheetValues(
       targetId,
-      `${this.ordersSheetName}!A:AZ`,
+      `${this.ordersSheetName}!A:AO`,
     );
-    if (!rawRows || rawRows.length === 0) return { header: [], rows: [] };
+
+    if (!rawRows || rawRows.length < 2) {
+      return {
+        header: rawRows?.[0] || [],
+        rows: [],
+      };
+    }
+
     return {
       header: rawRows[0],
-      rows: rawRows.slice(1),
+      rows: rawRows
+        .slice(1)
+        .filter((row) => row[4] !== "FAILED")
+        .map((row) => [
+          row[0] || "-",
+          row[1] || "-",
+          row[2] || "-",
+          row[3] || "-",
+          row[4] || "-",
+          row[5] || "-",
+          row[6] || "-",
+          row[7] || "-",
+          row[8] || "Forward",
+          row[9] || "SURFACE",
+          row[10] || "ECOMM",
+          row[11] || "-",
+          row[12] || "-",
+          row[13] || "-",
+          row[14] || "-",
+          row[15] || "-",
+          String(row[16] || "").trim(),
+          row[17] || "-",
+          row[18] || "-",
+          row[19] || "-",
+          row[20] || "-",
+          String(row[21] || "").trim(),
+          row[22] || "-",
+          row[23] || "-",
+          parseInt(row[24], 10) || 1,
+          parseFloat(row[25]) || 0,
+          parseFloat(row[26]) || 0,
+          parseFloat(row[27]) || 0,
+          parseFloat(row[28]) || 0,
+          parseFloat(row[29]) || 0,
+          parseFloat(row[30]) || 0,
+          parseFloat(row[31]) || 0,
+          row[32] || "COD",
+          parseFloat(row[33]) || 0,
+          row[34] || "-",
+          row[35] || "-",
+          row[36] || "-",
+          row[37] || "-",
+          row[38] || false,
+          row[39] || false,
+          row[40] || "-",
+          String(row[4] ?? "").includes("RTO") ? "RTO" : "Delivered",
+        ]),
     };
   }
 

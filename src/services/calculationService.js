@@ -6,6 +6,7 @@ const googleSheetsService = require("./googleSheetsService");
 const localPincodes = require("../data/pincodeMaster.json");
 const localRateCard = require("../data/rateCard.json");
 const localOrders = require("../data/orders.json");
+const { Header, LocalRowMapping } = require("../constant/header");
 
 class CalculationService {
   /**
@@ -170,12 +171,18 @@ class CalculationService {
     let dataSource = "Local Seed Datasets";
 
     console.log("=======================================================");
-    console.log("🚀 [1/4] Starting Freight Rate & Financial Breakdown Engine...");
-    console.log(`📊 Target Spreadsheet ID: ${spreadsheetId || googleSheetsService.spreadsheetId || "Local Seed"}`);
+    console.log(
+      "🚀 [1/4] Starting Freight Rate & Financial Breakdown Engine...",
+    );
+    console.log(
+      `📊 Target Spreadsheet ID: ${spreadsheetId || googleSheetsService.spreadsheetId || "Local Seed"}`,
+    );
 
     if (googleSheetsService.isConfigured()) {
       try {
-        console.log("⏳ [2/4] Fetching Pincode Master, Rate Card, and Orders from Google Sheets...");
+        console.log(
+          "⏳ [2/4] Fetching Pincode Master, Rate Card, and Orders from Google Sheets...",
+        );
         const [gsPincodes, gsRates, rawOrders] = await Promise.all([
           googleSheetsService.fetchPincodeMaster(spreadsheetId),
           googleSheetsService.fetchRateCard(spreadsheetId),
@@ -186,7 +193,9 @@ class CalculationService {
         if (gsRates.length > 0) ratesData = gsRates;
         if (rawOrders.rows.length > 0) rawTable = rawOrders;
         dataSource = `Google Sheet (${spreadsheetId || googleSheetsService.spreadsheetId})`;
-        console.log(`✅ [2/4] Successfully fetched Google Sheets data: ${pincodesData.length} Pincodes, ${ratesData.length} Rate Slabs, ${rawTable.rows.length} Order Rows.`);
+        console.log(
+          `✅ [2/4] Successfully fetched Google Sheets data: ${pincodesData.length} Pincodes, ${ratesData.length} Rate Slabs, ${rawTable.rows.length} Order Rows.`,
+        );
       } catch (err) {
         console.warn(
           "⚠️ Google Sheets fetch error, fallback to local dataset:",
@@ -194,89 +203,15 @@ class CalculationService {
         );
       }
     } else {
-      console.log("ℹ️ Google Sheets not configured. Using local JSON seed datasets.");
+      console.log(
+        "ℹ️ Google Sheets not configured. Using local JSON seed datasets.",
+      );
     }
 
     // Fallback if rawTable is empty
     if (!rawTable.header || rawTable.header.length === 0) {
-      rawTable.header = [
-        "* reference Id",
-        "* order date",
-        "* order type",
-        "* parcel category",
-        "delivery mode",
-        "* payment type",
-        "awb number",
-        "eWaybills",
-        "* pickup name",
-        "* pickup phone",
-        "* pickup address",
-        "pickup landmark",
-        "* pickup city",
-        "* pickup state",
-        "* pickup pincode",
-        "* delivery name",
-        "* delivery phone",
-        "* delivery address",
-        "delivery landmark",
-        "* delivery city",
-        "* delivery state",
-        "* delivery pincode",
-        "* physical weight (kg)",
-        "* length (cm)",
-        "* width (cm)",
-        "* height (cm)",
-        "* itemsName",
-        "itemsSku",
-        "* quantity",
-        "* itemsUnitPrice (rupees)",
-        "description",
-        "itemTaxType",
-        "itemTaxValue",
-        "itemDiscountType",
-        "itemDiscountValue",
-        "Shopify Order ID",
-        "delivery Status",
-      ];
-      rawTable.rows = localOrders.map((o) => [
-        o.referenceId,
-        o.orderDate,
-        o.orderType,
-        o.parcelCategory,
-        o.deliveryMode,
-        o.paymentType,
-        o.awbNumber,
-        o.eWaybills || "-",
-        o.pickupName,
-        o.pickupPhone,
-        o.pickupAddress,
-        o.pickupLandmark,
-        o.pickupCity,
-        o.pickupState,
-        o.pickupPincode || "-",
-        o.deliveryName,
-        o.deliveryPhone,
-        o.deliveryAddress,
-        o.deliveryLandmark || "-",
-        o.deliveryCity,
-        o.deliveryState,
-        o.deliveryPincode,
-        o.physicalWeight,
-        o.length,
-        o.width,
-        o.height,
-        o.itemsName,
-        o.itemsSku,
-        o.quantity,
-        o.itemsUnitPrice,
-        o.description || "-",
-        o.itemTaxType || "-",
-        o.itemTaxValue || "-",
-        o.itemDiscountType || "-",
-        o.itemDiscountValue || "-",
-        o.shopifyOrderId || "-",
-        o.deliveryStatus,
-      ]);
+      rawTable.header = Header;
+      rawTable.rows = LocalRowMapping;
     }
 
     // Find column indices dynamically from header
@@ -284,38 +219,24 @@ class CalculationService {
       h.toString().trim().toLowerCase(),
     );
 
-    let modeIdx = headers.findIndex(
-      (h) => h.includes("delivery mode") || h.includes("mode"),
-    );
-    if (modeIdx === -1) modeIdx = 4;
+    //delivery mode index
+    let modeIdx = 9;
 
-    let paymentTypeIdx = headers.findIndex(
-      (h) => h.includes("payment type") || h.includes("payment"),
-    );
-    if (paymentTypeIdx === -1) paymentTypeIdx = 5;
+    //payment type index
+    let paymentTypeIdx = 32;
 
-    let pickupPincodeIdx = headers.findIndex((h) =>
-      h.includes("pickup pincode"),
-    );
-    if (pickupPincodeIdx === -1) pickupPincodeIdx = 14;
+    //pickup pincode index
+    let pickupPincodeIdx = 16;
 
-    let deliveryPincodeIdx = headers.findIndex((h) =>
-      h.includes("delivery pincode"),
-    );
-    if (deliveryPincodeIdx === -1) deliveryPincodeIdx = 21;
+    //delivery pincode index
+    let deliveryPincodeIdx = 21;
 
-    let weightIdx = headers.findIndex(
-      (h) => h.includes("physical weight") || h.includes("weight"),
-    );
-    if (weightIdx === -1) weightIdx = 22;
+    //physical weight index
+    let weightIdx = 28;
 
-    let deliveryStatusIdx = headers.findIndex(
-      (h) =>
-        h.includes("delivery status") ||
-        h.includes("deliverystatus") ||
-        h.includes("delivery_status"),
-    );
-    console.log("deliveryStatusIdx", deliveryStatusIdx);
+    //delivery status index
+    let deliveryStatusIdx = 41;
+
     // If DeliveryStatus column is NOT present in original headers, we append it.
     // Otherwise, we update the existing status column in-place to prevent duplicates.
     const appendDeliveryStatusCol = deliveryStatusIdx === -1;
@@ -331,18 +252,23 @@ class CalculationService {
 
     const newHeaders = newFinancialHeaders;
 
-    const resultHeader = [...rawTable.header, ...newHeaders];
+    const resultHeader = [...Header, ...newHeaders];
 
     const enrichedRows = [];
     const summaryOrders = [];
 
-    console.log(`🧮 [3/4] Calculating rates & financial breakdown for ${rawTable.rows.length} order rows...`);
+    console.log(
+      `🧮 [3/4] Calculating rates & financial breakdown for ${rawTable.rows.length} order rows...`,
+    );
 
     let rowIndex = 0;
+    console.log("panthil : ", rawTable);
     for (const row of rawTable.rows) {
       rowIndex++;
       if (rowIndex % 10 === 0 || rowIndex === rawTable.rows.length) {
-        console.log(`   └─ Progress: Processed ${rowIndex}/${rawTable.rows.length} orders...`);
+        console.log(
+          `   └─ Progress: Processed ${rowIndex}/${rawTable.rows.length} orders...`,
+        );
       }
 
       const mode = row[modeIdx] || "SURFACE";
@@ -448,22 +374,30 @@ class CalculationService {
 
     let sheetUpdateResult = null;
     if (googleSheetsService.isConfigured()) {
-      console.log(`💾 [4/4] Writing ${enrichedRows.length} enriched rows to Google Sheet "Result" tab...`);
+      console.log(
+        `💾 [4/4] Writing ${enrichedRows.length} enriched rows to Google Sheet "Result" tab...`,
+      );
       sheetUpdateResult = await googleSheetsService.writeRawTableToResultSheet(
         resultHeader,
         enrichedRows,
         spreadsheetId,
       );
       if (sheetUpdateResult?.updatedRange) {
-        console.log(`✅ [4/4] Updated Google Sheet "Result" tab range: ${sheetUpdateResult.updatedRange}`);
+        console.log(
+          `✅ [4/4] Updated Google Sheet "Result" tab range: ${sheetUpdateResult.updatedRange}`,
+        );
       }
     }
 
-    const totalGrandSum = parseFloat(summaryOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2));
+    const totalGrandSum = parseFloat(
+      summaryOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2),
+    );
     console.log("=======================================================");
     console.log("🎉 Freight Calculation & Sheet Sync Finished Successfully!");
     console.log(`   ├─ Total Orders Processed : ${enrichedRows.length}`);
-    console.log(`   ├─ Total Freight Cost     : ₹${summaryOrders.reduce((sum, o) => sum + o.rate, 0)}`);
+    console.log(
+      `   ├─ Total Freight Cost     : ₹${summaryOrders.reduce((sum, o) => sum + o.rate, 0)}`,
+    );
     console.log(`   └─ Grand Total Amount     : ₹${totalGrandSum}`);
     console.log("=======================================================");
 
